@@ -1,0 +1,43 @@
+{
+    "someInt": 42,
+    "someFloat": 4.2,
+    "someString": "string",
+    "someTrue": true,
+    "someFalse": false,
+    "someNull": null,
+    "someArray": [
+        1,
+        2,
+        3
+    ],
+    "nestedObject": {
+        "name": "name",
+        "nestedObject": {
+            "name": "name2"
+        }
+    },
+    "nestedArray": [
+        {
+            "name": "name",
+            "nestedObject": {
+                "name": "name2"
+            }
+        },
+        {
+            "name": "name2",
+            "nestedObject": {
+                "name": "name22"
+            }
+        }
+    ],
+    "mixArray": [
+        1,
+        "string",
+        {
+            "name": "name",
+            "nestedObject": {
+                "name": "name2"
+            }
+        }
+    ]
+}

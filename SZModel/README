@@ -1,0 +1,97 @@
+###############
+json spec:
+###############
+
+object
+    {}
+    { members }
+
+members
+    pair
+    pair, members
+
+pair
+    string : value
+
+array
+    []
+    [ elements ]
+
+elements
+    value
+    value, elements
+
+value
+    string
+    number
+    object
+    array
+    true
+    false
+    null
+
+###############
+Foundation spec:
+###############
+
+object(NSDictioanry)
+    {}
+    { members }
+
+members
+    pair
+    pair, members
+
+pair
+    string : value
+
+array(NSArray)
+    []
+    [ elements ]
+
+elements
+    value
+    value, elements
+
+value(id)
+    NSString
+    NSNumber
+    NSNumber
+    NSNumber
+    NSNull
+    object(NSDictionary)
+    array(NSArray)
+
+###############
+object spec:
+###############
+
+object(CustomObject)
+    { members }
+
+members
+    pair
+    pair, members
+
+pair(property)
+    string(property_name) : value(property_value)
+
+
+array(NSArray)
+    []
+    [ elements ]
+
+elements
+    value
+    value, elements
+
+
+value(id)
+    NSString
+    NSNumber
+    NSNumber
+    NSNumber
+    NSNull
+    array(NSArray)
+    object(CustomClass)
+
