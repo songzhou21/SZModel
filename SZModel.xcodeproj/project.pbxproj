@@ -18,7 +18,6 @@
 		5838EF8C20E7C85300A50CD7 /* SZNestedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 5838EF8A20E7C85300A50CD7 /* SZNestedObject.h */; };
 		5838EF8D20E7C85300A50CD7 /* SZNestedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 5838EF8B20E7C85300A50CD7 /* SZNestedObject.m */; };
 		5838EF8F20E7C95D00A50CD7 /* SZModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 5838EF8E20E7C95D00A50CD7 /* SZModel.m */; };
-		5838EF9120E927A500A50CD7 /* README in Resources */ = {isa = PBXBuildFile; fileRef = 5838EF9020E927A500A50CD7 /* README */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,7 +45,6 @@
 		5838EF8A20E7C85300A50CD7 /* SZNestedObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SZNestedObject.h; sourceTree = "<group>"; };
 		5838EF8B20E7C85300A50CD7 /* SZNestedObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SZNestedObject.m; sourceTree = "<group>"; };
 		5838EF8E20E7C95D00A50CD7 /* SZModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SZModel.m; sourceTree = "<group>"; };
-		5838EF9020E927A500A50CD7 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +95,6 @@
 				5838EF8720E7C30D00A50CD7 /* SZModelSample.m */,
 				5838EF8A20E7C85300A50CD7 /* SZNestedObject.h */,
 				5838EF8B20E7C85300A50CD7 /* SZNestedObject.m */,
-				5838EF9020E927A500A50CD7 /* README */,
 				5838EF6A20E77D8900A50CD7 /* Info.plist */,
 				5838EF8020E77FCC00A50CD7 /* sample.json */,
 			);
@@ -206,7 +203,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5838EF9120E927A500A50CD7 /* README in Resources */,
 				5838EF8120E77FCC00A50CD7 /* sample.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
