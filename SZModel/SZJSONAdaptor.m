@@ -12,8 +12,30 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+void sz_enumerate_class_property(Class klass, void(^block)(NSString *property_name, NSString *type_attribute)){
+    if (!block) {
+        return;
+    }
+    
+    unsigned int count;
+    objc_property_t *props = class_copyPropertyList(klass, &count);
+    for (int i = 0; i < count; i++) {
+        objc_property_t property = props[i];
+        const char *name = property_getName(property);
+        NSString *propertyName = [NSString stringWithCString:name encoding:NSUTF8StringEncoding];
+        const char *type = property_getAttributes(property);
+        
+        NSString *typeString = [NSString stringWithUTF8String:type];
+        NSArray<NSString *> *attributes = [typeString componentsSeparatedByString:@","];
+        NSString *typeAttribute = attributes[0];
+        
+        block(propertyName, typeAttribute);
+    }
+}
+
 @interface SZJSONAdaptor ()
 
+@property (nonatomic, copy) NSSet *jsonObjClasses;
 
 @end
 
@@ -23,7 +45,13 @@ NS_ASSUME_NONNULL_BEGIN
 {
     self = [super init];
     if (self) {
-
+        _jsonObjClasses = [NSSet setWithArray:@[
+                                                NSString.class,
+                                                NSNumber.class,
+                                                NSArray.class,
+                                                NSDictionary.class,
+                                                NSNull.class
+                                                ]];
     }
     
     return self;
@@ -93,33 +121,95 @@ NS_ASSUME_NONNULL_BEGIN
     return [retArray copy];
 }
 
-- (NSDictionary<NSString *, NSString *> *)_propertyClassMapForClass:(Class)kclass{
+- (NSDictionary<NSString *, NSString *> *)_propertyClassMapForClass:(Class)klass{
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     
-    unsigned int count;
-    objc_property_t *props = class_copyPropertyList(kclass, &count);
-    for (int i = 0; i < count; i++) {
-        objc_property_t property = props[i];
-        const char *name = property_getName(property);
-        NSString *propertyName = [NSString stringWithCString:name encoding:NSUTF8StringEncoding];
-        const char *type = property_getAttributes(property);
-        
-        NSString *typeString = [NSString stringWithUTF8String:type];
-        NSArray<NSString *> *attributes = [typeString componentsSeparatedByString:@","];
-        NSString *typeAttribute = attributes[0];
-        
+    sz_enumerate_class_property(klass, ^(NSString * _Nonnull property_name, NSString * _Nonnull typeAttribute) {
         if ([typeAttribute hasPrefix:@"T@"]) {
             NSString *typeClassName = [typeAttribute substringWithRange:NSMakeRange(3, [typeAttribute length] - 4)];
-            ret[propertyName] = typeClassName;
+            ret[property_name] = typeClassName;
         }
-    }
+    });
+
+    return ret;
+}
+
+- (NSDictionary *)_dictionaryFromModel:(id)model {
+    NSMutableDictionary *ret = [NSMutableDictionary dictionary];
+    
+    sz_enumerate_class_property([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
+        
+        id obj = [model valueForKey:property_name];
+        
+        /// handle number
+        if (![type_attribute hasPrefix:@"TB"] && // not boolean
+            [obj isKindOfClass:[NSNumber class]]) {
+            NSDecimalNumber *d = [NSDecimalNumber decimalNumberWithString:[obj stringValue]];
+            obj = d;
+        }
+
+        /// handle object
+        if (![self _canConvertToJSON:obj]) {
+            id retObj = [self _dictionaryFromModel:obj];
+            obj = retObj;
+        }
+        
+        /// handle array
+        if ([obj isKindOfClass:[NSArray class]]) {
+            NSMutableArray *array = [NSMutableArray array];
+            for (id o in (NSArray *)obj) {
+                if ([self _canConvertToJSON:o]) {
+                    [array addObject:o];
+                } else {
+                    NSDictionary *dict = [self _dictionaryFromModel:o];
+                    [array addObject:dict];
+                }
+            }
+            
+            obj = array;
+        }
+        
+        [ret setObject:obj forKey:property_name];
+//        NSLog(@"property_name:%@, type:%@, obj:%@", property_name, type_attribute, obj);
+    });
     
     return ret;
 }
 
+// All objects are NSString, NSNumber, NSArray, NSDictionary, or NSNull
+- (NSString *)_dictionary2JSON:(NSDictionary *)dictioary {
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dictioary options:NSJSONWritingPrettyPrinted error:&error];
+    if (!jsonData || error) {
+        return @"{}";
+    } else {
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    }
+}
+
+- (BOOL)_canConvertToJSON:(id)obj {
+    Class klass = [obj class];
+    
+    if ([self.jsonObjClasses containsObject:[obj class]]) {
+        return YES;
+    }
+    
+    for (Class jsonKlass in self.jsonObjClasses) {
+        if ([klass isSubclassOfClass:jsonKlass]) {
+            return YES;
+        }
+    }
+    
+    return NO;
+    
+}
 #pragma mark - API
 - (id)modelFromClass:(Class)klass dictionary:(NSDictionary *)dictioary {
     return [self _modelFromClass:klass dictionary:dictioary];
+}
+
+- (NSDictionary *)dictionaryFromModel:(id)model {
+    return [self _dictionaryFromModel:model];
 }
 
 @end

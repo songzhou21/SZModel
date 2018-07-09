@@ -68,4 +68,9 @@
     XCTAssert([model.mixArray[2] isKindOfClass:[NSDictionary class]]);
 }
 
+- (void)testObj2Dictionary {
+    SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
+    SZModelSample *model = [adaptor modelFromClass:[SZModelSample class] dictionary:_jsonDictionary];
+    [adaptor dictionaryFromModel:model];
+}
 @end
