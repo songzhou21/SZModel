@@ -3,7 +3,7 @@
 [-] convert JSON to Objective-C object
 	- support nested object mapping
 	- support mapping array with custom class, not support nested array mapping
-[] convert Objective-C object to JSON
+[-] convert Objective-C object to JSON
 
 ###############
 json spec:
