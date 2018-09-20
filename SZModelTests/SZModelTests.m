@@ -65,12 +65,16 @@
     XCTAssert([model.nestedArray.firstObject.nestedObject.name isEqualToString:@"name2"]);
     
     XCTAssert([model.mixArray.firstObject isEqual:@1]);
+    /// not support mix array contains object
     XCTAssert([model.mixArray[2] isKindOfClass:[NSDictionary class]]);
 }
 
 - (void)testObj2Dictionary {
     SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
     SZModelSample *model = [adaptor modelFromClass:[SZModelSample class] dictionary:_jsonDictionary];
-    [adaptor dictionaryFromModel:model];
+    NSDictionary *dict = [adaptor dictionaryFromModel:model];
+    
+    XCTAssert([_jsonDictionary isEqualToDictionary:dict]);
+    
 }
 @end

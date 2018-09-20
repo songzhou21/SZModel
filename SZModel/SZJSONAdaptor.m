@@ -141,13 +141,6 @@ void sz_enumerate_class_property(Class klass, void(^block)(NSString *property_na
         
         id obj = [model valueForKey:property_name];
         
-        /// handle number
-        if (![type_attribute hasPrefix:@"TB"] && // not boolean
-            [obj isKindOfClass:[NSNumber class]]) {
-            NSDecimalNumber *d = [NSDecimalNumber decimalNumberWithString:[obj stringValue]];
-            obj = d;
-        }
-
         /// handle object
         if (![self _canConvertToJSON:obj]) {
             id retObj = [self _dictionaryFromModel:obj];
@@ -190,7 +183,7 @@ void sz_enumerate_class_property(Class klass, void(^block)(NSString *property_na
 - (BOOL)_canConvertToJSON:(id)obj {
     Class klass = [obj class];
     
-    if ([self.jsonObjClasses containsObject:[obj class]]) {
+    if ([self.jsonObjClasses containsObject:klass]) {
         return YES;
     }
     
