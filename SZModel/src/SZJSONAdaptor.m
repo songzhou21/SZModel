@@ -172,7 +172,7 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
         NSMutableDictionary *ret = [NSMutableDictionary dictionary];
         SZEnumerateAllClassProperty([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
             id obj = [model valueForKey:property_name];
-            [ret setObject:[[self _foundationObjFromModel:obj] copy] forKey:property_name];
+            [ret setObject:[self _foundationObjFromModel:obj] forKey:property_name];
         });
         
         return ret;
