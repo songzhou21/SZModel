@@ -87,10 +87,7 @@
 		5838EF6820E77D8900A50CD7 /* SZModel */ = {
 			isa = PBXGroup;
 			children = (
-				5838EF6920E77D8900A50CD7 /* SZModel.h */,
-				5838EF8E20E7C95D00A50CD7 /* SZModel.m */,
-				5838EF8220E780E000A50CD7 /* SZJSONAdaptor.h */,
-				5838EF8320E780E000A50CD7 /* SZJSONAdaptor.m */,
+				58E1DA40226EAD630016FA64 /* src */,
 				5838EF8620E7C30D00A50CD7 /* SZModelSample.h */,
 				5838EF8720E7C30D00A50CD7 /* SZModelSample.m */,
 				5838EF8A20E7C85300A50CD7 /* SZNestedObject.h */,
@@ -108,6 +105,17 @@
 				5838EF7620E77D8900A50CD7 /* Info.plist */,
 			);
 			path = SZModelTests;
+			sourceTree = "<group>";
+		};
+		58E1DA40226EAD630016FA64 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				5838EF6920E77D8900A50CD7 /* SZModel.h */,
+				5838EF8E20E7C95D00A50CD7 /* SZModel.m */,
+				5838EF8220E780E000A50CD7 /* SZJSONAdaptor.h */,
+				5838EF8320E780E000A50CD7 /* SZJSONAdaptor.m */,
+			);
+			path = src;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
