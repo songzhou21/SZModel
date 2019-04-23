@@ -12,3 +12,7 @@
 }
 
 @end
+
+@implementation SZModelSampleChild
+
+@end

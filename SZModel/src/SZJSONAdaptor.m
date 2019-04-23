@@ -33,6 +33,15 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
     }
 }
 
+void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_name, NSString *type_attribute)){
+    Class currentClass = klass;
+    while (currentClass != [NSObject class]) {
+        SZEnumerateClassProperty(currentClass, block);
+        
+        currentClass = [currentClass superclass];
+    }
+}
+
 @interface SZJSONAdaptor ()
 
 @property (nonatomic, copy) NSSet *jsonFoundationClasses;
@@ -146,7 +155,9 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
 }
 
 - (NSObject *)_foundationObjFromModel:(NSObject *)model {
-    if ([self _isPrimitiveType:model]) {
+    if (model == nil) {
+        return [NSNull null];
+    } else if ([self _isPrimitiveType:model]) {
         return model;
     } else if ([model isKindOfClass:[NSArray class]]) {
         NSArray *objArray = (NSArray *)model;
@@ -159,7 +170,7 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
         return retArray;
     } else {
         NSMutableDictionary *ret = [NSMutableDictionary dictionary];
-        SZEnumerateClassProperty([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
+        SZEnumerateAllClassProperty([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
             id obj = [model valueForKey:property_name];
             [ret setObject:[[self _foundationObjFromModel:obj] copy] forKey:property_name];
         });

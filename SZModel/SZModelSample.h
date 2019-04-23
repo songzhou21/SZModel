@@ -23,3 +23,9 @@
 @property (nonatomic, copy) NSArray* mixArray;
 
 @end
+
+@interface SZModelSampleChild : SZModelSample
+
+@property (nonatomic, copy) NSString* childName;
+
+@end

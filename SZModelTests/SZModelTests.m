@@ -69,6 +69,7 @@
     XCTAssert([model.mixArray[2] isKindOfClass:[NSDictionary class]]);
 }
 
+#pragma mark - Foundation to JSON
 - (void)testObj2Dictionary {
     SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
     SZModelSample *model = [adaptor modelFromClass:[SZModelSample class] dictionary:_jsonDictionary];
@@ -77,4 +78,29 @@
     XCTAssert([_jsonDictionary isEqualToDictionary:dict]);
     
 }
+
+- (void)testNilPropertyToJSON {
+    SZModelSample *o = [SZModelSample new];
+    o.someString = @"string";
+    o.someInt = nil;
+    
+    SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
+    NSDictionary *ret = [adaptor foundationObjFromModel:o];
+    
+    XCTAssert([ret[@"someInt"] isEqual:[NSNull null]]);
+    XCTAssert([ret[@"someString"] isEqualToString:@"string"]);
+}
+
+- (void)testSubclassToJSON {
+    SZModelSampleChild *o = [SZModelSampleChild new];
+    o.someString = @"string";
+    o.childName = @"child";
+    
+    SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
+    NSDictionary *ret = [adaptor foundationObjFromModel:o];
+    
+    XCTAssert([ret[@"someString"] isEqualToString:@"string"]);
+    XCTAssert([ret[@"childName"] isEqualToString:@"child"]);
+}
+
 @end
