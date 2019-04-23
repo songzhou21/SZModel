@@ -36,6 +36,7 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
 @interface SZJSONAdaptor ()
 
 @property (nonatomic, copy) NSSet *jsonFoundationClasses;
+/// primitive types, can be converted to JSON directly, ignore NSDictionary contains custom object
 @property (nonatomic, copy) NSSet<Class> *primitiveTypes;
 
 @end

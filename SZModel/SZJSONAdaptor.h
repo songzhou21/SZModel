@@ -13,6 +13,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface SZJSONAdaptor : NSObject
 
 - (id)modelFromClass:(Class)klass dictionary:(NSDictionary *)dictioary;
+
+/**
+ convert model to Foundation Object
+
+ @param model to model needs to be converted
+ @return Foudnation Object, depend on the Class of model, return value may not be [NSDictionary class]
+ 
+ @note not handle NSDictionary contains custom object case
+ */
 - (NSDictionary *)dictionaryFromModel:(NSObject *)model;
 
 @end
