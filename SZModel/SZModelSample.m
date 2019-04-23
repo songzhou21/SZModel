@@ -5,9 +5,9 @@
 
 @implementation SZModelSample
 
-- (NSDictionary *)propertyClassMap {
++ (NSDictionary<NSString *, Class > *)propertyClassDictionary {
     return @{
-             @"nestedArray": @"SZNestedObject"
+             @"nestedArray": SZNestedObject.class
              };
 }
 

@@ -8,9 +8,23 @@
 
 #import "SZJSONAdaptor.h"
 #import <objc/runtime.h>
-#import "SZModelContainer.h"
+#import "SZCodable.h"
 
 NS_ASSUME_NONNULL_BEGIN
+static NSSet<NSString *> *SZInternalProperties(void) {
+    static NSSet<NSString *> *ret;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ret = [NSSet setWithArray:@[
+                                    @"description",
+                                    @"debugDescription",
+                                    @"hash",
+                                    @"superclass",
+                                    ]];
+    });
+    
+    return ret;
+}
 
 void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name, NSString *type_attribute)){
     if (!block) {
@@ -33,10 +47,20 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
     }
 }
 
+void SZCleanEnumerateClassProperty(Class klass, void(^block)(NSString *property_name, NSString *type_attribute)){
+    SZEnumerateClassProperty(klass, ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
+        if ([SZInternalProperties() containsObject:property_name]) {
+            return;
+        }
+        
+        block(property_name, type_attribute);
+    });
+}
+
 void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_name, NSString *type_attribute)){
     Class currentClass = klass;
     while (currentClass != [NSObject class]) {
-        SZEnumerateClassProperty(currentClass, block);
+        SZCleanEnumerateClassProperty(currentClass, block);
         
         currentClass = [currentClass superclass];
     }
@@ -44,107 +68,68 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
 
 @interface SZJSONAdaptor ()
 
-@property (nonatomic, copy) NSSet *jsonFoundationClasses;
-/// primitive types, can be converted to JSON directly, ignore NSDictionary contains custom object
+/// primitive types, can be converted to JSON directly, treat NSDictionary as primitive type
 @property (nonatomic, copy) NSSet<Class> *primitiveTypes;
+/// primitive types, can be converted to JSON directly, not including NSDictioanry
+@property (nonatomic, copy) NSSet<Class> *modelPrimitiveTypes;
 
 @end
 
 @implementation SZJSONAdaptor
 
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        _jsonFoundationClasses =
-        [NSSet setWithArray:@[
-                              NSString.class,
-                              NSNumber.class,
-                              NSArray.class,
-                              NSDictionary.class,
-                              NSNull.class
-                              ]];
-        
-        _primitiveTypes =
-        [NSSet setWithArray:@[
-                              NSNull.class,
-                              NSNumber.class,
-                              NSString.class,
-                              NSDictionary.class,
-                              ]];
-    }
-    
-    return self;
-}
+/**
+ create object from Foundation obj
 
-- (id)_modelFromClass:(Class)klass dictionary:(NSDictionary *)dictionary {
-    if (![klass isSubclassOfClass:[SZModel class]]) {
+ @param klass the Class of Dictionary, maybe nil if obj is primitieve Foundation obj
+ @param obj the Foundation obj
+ @return custom obj
+ */
+- (id)_modelFromClass:(nullable Class)klass foundationObj:(NSObject *)obj {
+    if ([self _isKindOfType:obj container:self.modelPrimitiveTypes]) {
+        return obj;
+    } else if ([obj isKindOfClass:[NSArray class]]) {
+        NSArray *objArray = (NSArray *)obj;
+        NSMutableArray *retArray = [NSMutableArray arrayWithCapacity:objArray.count];
+        
+        for (int i = 0; i < objArray.count; i++) {
+            id value = objArray[i];
+            retArray[i] = [self _modelFromClass:klass foundationObj:value];
+        }
+        
+        return retArray;
+    } else if ([obj isKindOfClass:[NSDictionary class]]) {
+        if (!klass) { // when not conforming `SZCodable` or `propertyClassDictionary` return nil
+            return obj;
+        }
+        
+        NSObject *model = [klass new];
+        
+        NSDictionary<NSString *, NSString *> * propertyClassMap = [self _propertyClassMapForClass:klass];
+        NSDictionary *dictionary = (NSDictionary *)obj;
+        for (NSString *propertyName in dictionary) {
+            NSObject *propertyValue = dictionary[propertyName];
+            Class propertyClass = NSClassFromString(propertyClassMap[propertyName]);
+            
+            if ([propertyValue isKindOfClass:[NSArray class]] &&
+                [klass conformsToProtocol:@protocol(SZCodable)]) { // return NSArray<ObjectType>
+                NSDictionary<NSString *, Class > * modelClassMap = [klass propertyClassDictionary];
+
+                [model setValue:[self _modelFromClass:modelClassMap[propertyName] foundationObj:propertyValue] forKey:propertyName];
+            } else {
+                [model setValue:[self _modelFromClass:propertyClass foundationObj:propertyValue] forKey:propertyName];
+            }
+        }
+        
+        return model;
+    } else {
         return [NSNull null];
     }
-    
-    SZModel *ret = [klass new];
-    NSDictionary<NSString *, NSString *> * propertyClassMap = [self _propertyClassMapForClass:[ret class]];
-    
-    for (NSString *key in dictionary.allKeys) {
-        id value = dictionary[key];
-        
-        // nested object
-        if ([value isKindOfClass:[NSDictionary class]]) {
-            NSString *mapClassString = propertyClassMap[key];
-            if (mapClassString) {
-                Class mapClass = NSClassFromString(mapClassString);
-                id mapObjectValue = [self modelFromClass:mapClass dictionary:value];
-                [ret setValue:mapObjectValue forKey:key];
-                
-                continue;
-            }
-        } else if ([value isKindOfClass:[NSArray class]]) {
-            NSDictionary *propertyClassMap = [ret propertyClassMap];
-            NSString *mapClassString = propertyClassMap[key];
-            
-            NSArray *retArray = [self _modelFromArray:value class:NSClassFromString(mapClassString)];
-            
-            [ret setValue:retArray forKey:key];
-            continue;
-        }
-        
-        
-        [ret setValue:value forKey:key];
-    }
-    
-    return ret;
-}
-
-/*
-  custom object in array is klass class, klass is subclass of SZModel,
- not support nested array object mapping
- */
-- (NSArray *)_modelFromArray:(NSArray *)array class:(_Nullable Class)klass {
-    if (![klass isSubclassOfClass:[SZModel class]]) {
-        return array;
-    }
-    
-    NSMutableArray *retArray = [NSMutableArray arrayWithCapacity:array.count];
-    for (id obj in array) {
-        id retObj;
-        if ([obj isKindOfClass:[NSDictionary class]]) {
-            retObj = [self modelFromClass:klass dictionary:obj];
-        } else if ([obj isKindOfClass:[NSArray class]]) {
-            retObj = [self _modelFromArray:obj class:nil];
-        } else {
-            retObj = obj;
-        }
-        
-        [retArray addObject:retObj];
-    }
-
-    return [retArray copy];
 }
 
 - (NSDictionary<NSString *, NSString *> *)_propertyClassMapForClass:(Class)klass{
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     
-    SZEnumerateClassProperty(klass, ^(NSString * _Nonnull property_name, NSString * _Nonnull typeAttribute) {
+    SZEnumerateAllClassProperty(klass, ^(NSString * _Nonnull property_name, NSString * _Nonnull typeAttribute) {
         if ([typeAttribute hasPrefix:@"T@"]) {
             NSString *typeClassName = [typeAttribute substringWithRange:NSMakeRange(3, [typeAttribute length] - 4)];
             ret[property_name] = typeClassName;
@@ -157,7 +142,7 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
 - (NSObject *)_foundationObjFromModel:(NSObject *)model {
     if (model == nil) {
         return [NSNull null];
-    } else if ([self _isPrimitiveType:model]) {
+    } else if ([self _isKindOfType:model container:self.primitiveTypes]) {
         return model;
     } else if ([model isKindOfClass:[NSArray class]]) {
         NSArray *objArray = (NSArray *)model;
@@ -190,44 +175,53 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
     }
 }
 
-- (BOOL)_isFoundationType:(id)obj {
+- (BOOL)_isKindOfType:(id)obj container:(NSSet<Class> *)container {
     Class klass = [obj class];
     
-    if ([self.jsonFoundationClasses containsObject:klass]) {
+    if ([container containsObject:klass]) {
         return YES;
     }
     
-    for (Class jsonKlass in self.jsonFoundationClasses) {
-        if ([klass isSubclassOfClass:jsonKlass]) {
+    for (Class klassInContainer in container) {
+        if ([klass isSubclassOfClass:klassInContainer]) {
             return YES;
         }
     }
     
     return NO;
-    
 }
 
-- (BOOL)_isPrimitiveType:(id)obj {
-    Class klass = [obj class];
-    
-    if ([self.primitiveTypes containsObject:klass]) {
-        return YES;
+#pragma mark - Getter
+- (NSSet<Class> *)primitiveTypes {
+    if (!_primitiveTypes) {
+        _primitiveTypes =
+        [NSSet setWithArray:@[
+                              NSNull.class,
+                              NSNumber.class,
+                              NSString.class,
+                              NSDictionary.class,
+                              ]];
     }
     
-    for (Class primitiveClass in self.primitiveTypes) {
-        if ([klass isSubclassOfClass:primitiveClass]) {
-            return YES;
-        }
+    return _primitiveTypes;
+}
+
+- (NSSet<Class> *)modelPrimitiveTypes {
+    if (!_modelPrimitiveTypes) {
+        _modelPrimitiveTypes =
+        [NSSet setWithArray:@[
+                              NSNull.class,
+                              NSNumber.class,
+                              NSString.class,
+                              ]];
     }
     
-    return NO;
-    
+    return _modelPrimitiveTypes;
 }
 
 #pragma mark - API
-
 - (id)modelFromClass:(Class)klass dictionary:(NSDictionary *)dictioary {
-    return [self _modelFromClass:klass dictionary:dictioary];
+    return [self _modelFromClass:klass foundationObj:dictioary];
 }
 
 - (id)foundationObjFromModel:(NSObject *)model {

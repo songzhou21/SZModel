@@ -17,8 +17,7 @@
 		5838EF8920E7C30D00A50CD7 /* SZModelSample.m in Sources */ = {isa = PBXBuildFile; fileRef = 5838EF8720E7C30D00A50CD7 /* SZModelSample.m */; };
 		5838EF8C20E7C85300A50CD7 /* SZNestedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 5838EF8A20E7C85300A50CD7 /* SZNestedObject.h */; };
 		5838EF8D20E7C85300A50CD7 /* SZNestedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 5838EF8B20E7C85300A50CD7 /* SZNestedObject.m */; };
-		58E1DA4A226EB0540016FA64 /* SZModelContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 58E1DA48226EB0540016FA64 /* SZModelContainer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		58E1DA4B226EB0540016FA64 /* SZModelContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 58E1DA49226EB0540016FA64 /* SZModelContainer.m */; };
+		58E1DA4A226EB0540016FA64 /* SZCodable.h in Headers */ = {isa = PBXBuildFile; fileRef = 58E1DA48226EB0540016FA64 /* SZCodable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,8 +44,7 @@
 		5838EF8720E7C30D00A50CD7 /* SZModelSample.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SZModelSample.m; sourceTree = "<group>"; };
 		5838EF8A20E7C85300A50CD7 /* SZNestedObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SZNestedObject.h; sourceTree = "<group>"; };
 		5838EF8B20E7C85300A50CD7 /* SZNestedObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SZNestedObject.m; sourceTree = "<group>"; };
-		58E1DA48226EB0540016FA64 /* SZModelContainer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SZModelContainer.h; sourceTree = "<group>"; };
-		58E1DA49226EB0540016FA64 /* SZModelContainer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SZModelContainer.m; sourceTree = "<group>"; };
+		58E1DA48226EB0540016FA64 /* SZCodable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SZCodable.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,8 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				5838EF6920E77D8900A50CD7 /* SZModel.h */,
-				58E1DA48226EB0540016FA64 /* SZModelContainer.h */,
-				58E1DA49226EB0540016FA64 /* SZModelContainer.m */,
+				58E1DA48226EB0540016FA64 /* SZCodable.h */,
 				5838EF8220E780E000A50CD7 /* SZJSONAdaptor.h */,
 				5838EF8320E780E000A50CD7 /* SZJSONAdaptor.m */,
 			);
@@ -128,7 +125,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				58E1DA4A226EB0540016FA64 /* SZModelContainer.h in Headers */,
+				58E1DA4A226EB0540016FA64 /* SZCodable.h in Headers */,
 				5838EF7720E77D8900A50CD7 /* SZModel.h in Headers */,
 				5838EF8420E780E000A50CD7 /* SZJSONAdaptor.h in Headers */,
 				5838EF8C20E7C85300A50CD7 /* SZNestedObject.h in Headers */,
@@ -233,7 +230,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				58E1DA4B226EB0540016FA64 /* SZModelContainer.m in Sources */,
 				5838EF8920E7C30D00A50CD7 /* SZModelSample.m in Sources */,
 				5838EF8520E780E000A50CD7 /* SZJSONAdaptor.m in Sources */,
 				5838EF8D20E7C85300A50CD7 /* SZNestedObject.m in Sources */,

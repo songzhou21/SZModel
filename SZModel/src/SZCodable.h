@@ -10,9 +10,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SZModel : NSObject
+@protocol SZCodable <NSObject>
 
-- (NSDictionary *)propertyClassMap;
+@required
++ (NSDictionary<NSString *, Class > *)propertyClassDictionary;
 
 @end
 

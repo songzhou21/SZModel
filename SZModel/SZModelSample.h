@@ -4,11 +4,11 @@
 // Model file Generated using objc_export https://github.com/gogozs/objc_export
 
 #import <Foundation/Foundation.h>
-#import "SZModel.h"
 
 #import "SZNestedObject.h"
+#import "SZCodable.h"
 
-@interface SZModelSample : SZModel
+@interface SZModelSample : NSObject <SZCodable>
 
 @property (nonatomic) NSNumber* someInt;
 @property (nonatomic) NSNumber* someFloat;

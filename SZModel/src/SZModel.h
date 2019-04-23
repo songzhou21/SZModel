@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "SZCodable.h"
 #import "SZJSONAdaptor.h"
-#import "SZModelContainer.h"
 
 //! Project version number for SZModel.
 FOUNDATION_EXPORT double SZModelVersionNumber;

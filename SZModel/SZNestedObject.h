@@ -7,18 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SZModel.h"
 
 @class SZNestedObject2;
 
-@interface SZNestedObject : SZModel
+@interface SZNestedObject : NSObject
 
 @property (nonatomic, copy) NSString *name;
 @property (nonatomic) SZNestedObject2 *nestedObject;
 
 @end
 
-@interface SZNestedObject2 : SZModel
+@interface SZNestedObject2 : NSObject
 
 @property (nonatomic, copy) NSString *name;
 

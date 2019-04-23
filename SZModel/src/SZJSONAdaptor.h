@@ -12,6 +12,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SZJSONAdaptor : NSObject
 
+/**
+ convert NSDcitonary to model object
+
+ @param klass the Class of model object
+ @param dictioary the dictionary needs to be converted
+ @return model object
+ */
 - (id)modelFromClass:(Class)klass dictionary:(NSDictionary *)dictioary;
 
 /**
