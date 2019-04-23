@@ -12,7 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-void sz_enumerate_class_property(Class klass, void(^block)(NSString *property_name, NSString *type_attribute)){
+void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name, NSString *type_attribute)){
     if (!block) {
         return;
     }
@@ -124,7 +124,7 @@ void sz_enumerate_class_property(Class klass, void(^block)(NSString *property_na
 - (NSDictionary<NSString *, NSString *> *)_propertyClassMapForClass:(Class)klass{
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     
-    sz_enumerate_class_property(klass, ^(NSString * _Nonnull property_name, NSString * _Nonnull typeAttribute) {
+    SZEnumerateClassProperty(klass, ^(NSString * _Nonnull property_name, NSString * _Nonnull typeAttribute) {
         if ([typeAttribute hasPrefix:@"T@"]) {
             NSString *typeClassName = [typeAttribute substringWithRange:NSMakeRange(3, [typeAttribute length] - 4)];
             ret[property_name] = typeClassName;
@@ -137,7 +137,7 @@ void sz_enumerate_class_property(Class klass, void(^block)(NSString *property_na
 - (NSDictionary *)_dictionaryFromModel:(id)model {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     
-    sz_enumerate_class_property([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
+    SZEnumerateClassProperty([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
         
         id obj = [model valueForKey:property_name];
         
