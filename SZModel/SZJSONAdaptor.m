@@ -35,7 +35,7 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
 
 @interface SZJSONAdaptor ()
 
-@property (nonatomic, copy) NSSet *jsonObjClasses;
+@property (nonatomic, copy) NSSet *jsonFoundationClasses;
 
 @end
 
@@ -45,13 +45,14 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
 {
     self = [super init];
     if (self) {
-        _jsonObjClasses = [NSSet setWithArray:@[
-                                                NSString.class,
-                                                NSNumber.class,
-                                                NSArray.class,
-                                                NSDictionary.class,
-                                                NSNull.class
-                                                ]];
+        _jsonFoundationClasses =
+        [NSSet setWithArray:@[
+                              NSString.class,
+                              NSNumber.class,
+                              NSArray.class,
+                              NSDictionary.class,
+                              NSNull.class
+                              ]];
     }
     
     return self;
@@ -183,11 +184,11 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
 - (BOOL)_canConvertToJSON:(id)obj {
     Class klass = [obj class];
     
-    if ([self.jsonObjClasses containsObject:klass]) {
+    if ([self.jsonFoundationClasses containsObject:klass]) {
         return YES;
     }
     
-    for (Class jsonKlass in self.jsonObjClasses) {
+    for (Class jsonKlass in self.jsonFoundationClasses) {
         if ([klass isSubclassOfClass:jsonKlass]) {
             return YES;
         }
@@ -196,7 +197,9 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
     return NO;
     
 }
+
 #pragma mark - API
+
 - (id)modelFromClass:(Class)klass dictionary:(NSDictionary *)dictioary {
     return [self _modelFromClass:klass dictionary:dictioary];
 }
