@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  convert model to Foundation Object
 
- @param model to model needs to be converted
+ @param model model needs to be converted
  @return Foudnation Object, depend on the Class of model, return value may not be [NSDictionary class]
  
  @note not handle NSDictionary contains custom object case
