@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "SZJSONAdaptor.h"
+#import "SZModelContainer.h"
 
 //! Project version number for SZModel.
 FOUNDATION_EXPORT double SZModelVersionNumber;
@@ -16,10 +17,3 @@ FOUNDATION_EXPORT double SZModelVersionNumber;
 FOUNDATION_EXPORT const unsigned char SZModelVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <SZModel/PublicHeader.h>
-
-
-@interface SZModel : NSObject
-
-- (NSDictionary *)propertyClassMap;
-
-@end

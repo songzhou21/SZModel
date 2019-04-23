@@ -7,8 +7,8 @@
 //
 
 #import "SZJSONAdaptor.h"
-#import "SZModelSample.h"
 #import <objc/runtime.h>
+#import "SZModelContainer.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -219,8 +219,8 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
     return [self _modelFromClass:klass dictionary:dictioary];
 }
 
-- (NSDictionary *)dictionaryFromModel:(NSObject *)model {
-    return (NSDictionary *)[self _foundationObjFromModel:model];
+- (id)foundationObjFromModel:(NSObject *)model {
+    return [self _foundationObjFromModel:model];
 }
 
 @end

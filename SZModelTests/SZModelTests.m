@@ -72,7 +72,7 @@
 - (void)testObj2Dictionary {
     SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
     SZModelSample *model = [adaptor modelFromClass:[SZModelSample class] dictionary:_jsonDictionary];
-    NSDictionary *dict = [adaptor dictionaryFromModel:model];
+    NSDictionary *dict = [adaptor foundationObjFromModel:model];
     
     XCTAssert([_jsonDictionary isEqualToDictionary:dict]);
     
