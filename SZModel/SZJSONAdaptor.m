@@ -36,6 +36,7 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
 @interface SZJSONAdaptor ()
 
 @property (nonatomic, copy) NSSet *jsonFoundationClasses;
+@property (nonatomic, copy) NSSet<Class> *primitiveTypes;
 
 @end
 
@@ -52,6 +53,14 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
                               NSArray.class,
                               NSDictionary.class,
                               NSNull.class
+                              ]];
+        
+        _primitiveTypes =
+        [NSSet setWithArray:@[
+                              NSNull.class,
+                              NSNumber.class,
+                              NSString.class,
+                              NSDictionary.class,
                               ]];
     }
     
@@ -135,39 +144,27 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
     return ret;
 }
 
-- (NSDictionary *)_dictionaryFromModel:(id)model {
-    NSMutableDictionary *ret = [NSMutableDictionary dictionary];
-    
-    SZEnumerateClassProperty([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
+- (NSObject *)_foundationObjFromModel:(NSObject *)model {
+    if ([self _isPrimitiveType:model]) {
+        return model;
+    } else if ([model isKindOfClass:[NSArray class]]) {
+        NSArray *objArray = (NSArray *)model;
+        NSMutableArray *retArray = [NSMutableArray arrayWithCapacity:objArray.count];
         
-        id obj = [model valueForKey:property_name];
-        
-        /// handle object
-        if (![self _canConvertToJSON:obj]) {
-            id retObj = [self _dictionaryFromModel:obj];
-            obj = retObj;
+        for (int i = 0; i < objArray.count; i++) {
+            retArray[i] = [self _foundationObjFromModel:objArray[i]];
         }
         
-        /// handle array
-        if ([obj isKindOfClass:[NSArray class]]) {
-            NSMutableArray *array = [NSMutableArray array];
-            for (id o in (NSArray *)obj) {
-                if ([self _canConvertToJSON:o]) {
-                    [array addObject:o];
-                } else {
-                    NSDictionary *dict = [self _dictionaryFromModel:o];
-                    [array addObject:dict];
-                }
-            }
-            
-            obj = array;
-        }
+        return retArray;
+    } else {
+        NSMutableDictionary *ret = [NSMutableDictionary dictionary];
+        SZEnumerateClassProperty([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
+            id obj = [model valueForKey:property_name];
+            [ret setObject:[[self _foundationObjFromModel:obj] copy] forKey:property_name];
+        });
         
-        [ret setObject:obj forKey:property_name];
-//        NSLog(@"property_name:%@, type:%@, obj:%@", property_name, type_attribute, obj);
-    });
-    
-    return ret;
+        return ret;
+    }
 }
 
 // All objects are NSString, NSNumber, NSArray, NSDictionary, or NSNull
@@ -181,7 +178,7 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
     }
 }
 
-- (BOOL)_canConvertToJSON:(id)obj {
+- (BOOL)_isFoundationType:(id)obj {
     Class klass = [obj class];
     
     if ([self.jsonFoundationClasses containsObject:klass]) {
@@ -198,14 +195,31 @@ void SZEnumerateClassProperty(Class klass, void(^block)(NSString *property_name,
     
 }
 
+- (BOOL)_isPrimitiveType:(id)obj {
+    Class klass = [obj class];
+    
+    if ([self.primitiveTypes containsObject:klass]) {
+        return YES;
+    }
+    
+    for (Class primitiveClass in self.primitiveTypes) {
+        if ([klass isSubclassOfClass:primitiveClass]) {
+            return YES;
+        }
+    }
+    
+    return NO;
+    
+}
+
 #pragma mark - API
 
 - (id)modelFromClass:(Class)klass dictionary:(NSDictionary *)dictioary {
     return [self _modelFromClass:klass dictionary:dictioary];
 }
 
-- (NSDictionary *)dictionaryFromModel:(id)model {
-    return [self _dictionaryFromModel:model];
+- (NSDictionary *)dictionaryFromModel:(NSObject *)model {
+    return (NSDictionary *)[self _foundationObjFromModel:model];
 }
 
 @end

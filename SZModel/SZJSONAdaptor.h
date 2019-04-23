@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface SZJSONAdaptor : NSObject
 
 - (id)modelFromClass:(Class)klass dictionary:(NSDictionary *)dictioary;
-- (NSDictionary *)dictionaryFromModel:(id)model;
+- (NSDictionary *)dictionaryFromModel:(NSObject *)model;
 
 @end
 
