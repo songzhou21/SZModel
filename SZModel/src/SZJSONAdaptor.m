@@ -66,6 +66,22 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
     }
 }
 
+NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
+    NSScanner *scanner = [NSScanner scannerWithString:type_attribute];
+    
+    NSString *quote = @"\"";
+    NSString *result;
+    if ([scanner scanUpToString:quote intoString:nil] && scanner.scanLocation < type_attribute.length) {
+        scanner.scanLocation += 1;
+        if ([scanner scanUpToString:quote intoString:&result]) {
+            return result;
+        }
+    }
+    
+    return nil;
+}
+
+
 @interface SZJSONAdaptor ()
 
 /// primitive types, can be converted to JSON directly, treat NSDictionary as primitive type
@@ -73,13 +89,15 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
 /// primitive types, can be converted to JSON directly, not including NSDictioanry
 @property (nonatomic, copy) NSSet<Class> *modelPrimitiveTypes;
 
+@property (nonatomic, copy) NSDictionary<NSString *, id> *objInitailValueMap;
+
 @end
 
 @implementation SZJSONAdaptor
 
 /**
  create object from Foundation obj
-
+ 
  @param klass the Class of Dictionary, maybe nil if obj is primitieve Foundation obj
  @param obj the Foundation obj
  @return custom obj
@@ -113,7 +131,7 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
             if ([propertyValue isKindOfClass:[NSArray class]] &&
                 [klass conformsToProtocol:@protocol(SZCodable)]) { // return NSArray<ObjectType>
                 NSDictionary<NSString *, Class > * modelClassMap = [klass propertyClassDictionary];
-
+                
                 [model setValue:[self _modelFromClass:modelClassMap[propertyName] foundationObj:propertyValue] forKey:propertyName];
             } else {
                 [model setValue:[self _modelFromClass:propertyClass foundationObj:propertyValue] forKey:propertyName];
@@ -135,21 +153,22 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
             ret[property_name] = typeClassName;
         }
     });
-
+    
     return ret;
 }
 
-- (NSObject *)_foundationObjFromModel:(NSObject *)model {
-    if (model == nil) {
-        return [NSNull null];
-    } else if ([self _isKindOfType:model container:self.primitiveTypes]) {
-        return model;
+- (NSObject *)_makeFoundationObjectFromModel:(NSObject *)model type:(NSString *)type maker:(NSObject *(^)(NSObject * _Nullable obj, NSString *type))maker {
+    if (model == nil ||
+        [self _isKindOfType:model container:self.primitiveTypes]) {
+        return maker(model, type);
     } else if ([model isKindOfClass:[NSArray class]]) {
         NSArray *objArray = (NSArray *)model;
         NSMutableArray *retArray = [NSMutableArray arrayWithCapacity:objArray.count];
         
         for (int i = 0; i < objArray.count; i++) {
-            retArray[i] = [self _foundationObjFromModel:objArray[i]];
+            NSObject *obj = objArray[i];
+            NSString *type = NSStringFromClass([obj class]);
+            retArray[i] = [self _makeFoundationObjectFromModel:obj type:type maker:maker];
         }
         
         return retArray;
@@ -157,11 +176,24 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
         NSMutableDictionary *ret = [NSMutableDictionary dictionary];
         SZEnumerateAllClassProperty([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
             id obj = [model valueForKey:property_name];
-            [ret setObject:[self _foundationObjFromModel:obj] forKey:property_name];
+            [ret setObject:[self _makeFoundationObjectFromModel:obj type:SZClassNameFromType(type_attribute) maker:maker] forKey:property_name];
         });
         
         return ret;
     }
+}
+
+- (NSObject *)_foundationObjFromModel:(NSObject *)model {
+    return
+    [self _makeFoundationObjectFromModel:model
+                                    type:NSStringFromClass(model.class)
+                                   maker:^NSObject * _Nonnull(NSObject * _Nullable obj, NSString * _Nonnull type) {
+                                       if (obj == nil) {
+                                           return [NSNull null];
+                                       } else {
+                                           return obj;
+                                       }
+                                   }];
 }
 
 // All objects are NSString, NSNumber, NSArray, NSDictionary, or NSNull
@@ -219,6 +251,20 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
     return _modelPrimitiveTypes;
 }
 
+- (NSDictionary<NSString *,id> *)objInitailValueMap {
+    if (!_objInitailValueMap) {
+        _objInitailValueMap =
+        @{
+          NSStringFromClass([NSNumber class]): @0,
+          NSStringFromClass([NSString class]) : @"",
+          NSStringFromClass([NSArray class]) : @[],
+          NSStringFromClass([NSDictionary class]) : @{}
+          };
+    }
+    
+    return _objInitailValueMap;
+}
+
 #pragma mark - API
 - (id)modelFromClass:(Class)klass dictionary:(NSDictionary *)dictioary {
     return [self _modelFromClass:klass foundationObj:dictioary];
@@ -226,6 +272,19 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
 
 - (id)foundationObjFromModel:(NSObject *)model {
     return [self _foundationObjFromModel:model];
+}
+
+- (id)foundationObjNoNullFromModel:(NSObject *)model {
+    return
+    [self _makeFoundationObjectFromModel:model
+                                    type:NSStringFromClass(model.class)
+                                   maker:^NSObject * _Nonnull(NSObject * _Nullable obj, NSString * _Nonnull type) {
+                                       if (obj == nil) {
+                                           return self.objInitailValueMap[type] ?: [NSNull null];
+                                       } else {
+                                           return obj;
+                                       }
+                                   }];
 }
 
 @end

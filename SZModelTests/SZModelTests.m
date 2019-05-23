@@ -91,6 +91,18 @@
     XCTAssert([ret[@"someString"] isEqualToString:@"string"]);
 }
 
+- (void)testNilPropertyNoNullToJSON {
+    SZModelSample *o = [SZModelSample new];
+    
+    SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
+    NSDictionary *ret = [adaptor foundationObjNoNullFromModel:o];
+    
+    XCTAssert([ret[@"someInt"] isEqual:@0]);
+    XCTAssert([ret[@"someString"] isEqualToString:@""]);
+    XCTAssert([ret[@"someNull"] isEqual:[NSNull null]]);
+    XCTAssert([ret[@"nestedObject"] isEqual:[NSNull null]]);
+}
+
 - (void)testSubclassToJSON {
     SZModelSampleChild *o = [SZModelSampleChild new];
     o.someString = @"string";
