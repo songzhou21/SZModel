@@ -129,6 +129,9 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
         for (NSString *propertyName in dictionary) {
             NSObject *propertyValue = dictionary[propertyName];
             Class propertyClass = NSClassFromString(propertyClassMap[propertyName]);
+            if (!propertyClass) {
+                continue;
+            }
             
             if ([propertyValue isKindOfClass:[NSArray class]] &&
                 [klass conformsToProtocol:@protocol(SZCodable)]) { // return NSArray<ObjectType>
