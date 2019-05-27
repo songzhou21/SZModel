@@ -1,4 +1,5 @@
 {
+    "somePrimitiveInt": 42,
     "someInt": 42,
     "someFloat": 4.2,
     "someString": "string",

@@ -103,7 +103,9 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
  @return custom obj
  */
 - (id)_modelFromClass:(nullable Class)klass foundationObj:(NSObject *)obj {
-    if ([self _isKindOfType:obj container:self.modelPrimitiveTypes]) {
+    if ([obj isEqual:[NSNull null]]) {
+        return nil;
+    }else if ([self _isKindOfType:obj container:self.modelPrimitiveTypes]) {
         return obj;
     } else if ([obj isKindOfClass:[NSArray class]]) {
         NSArray *objArray = (NSArray *)obj;
@@ -242,7 +244,6 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
     if (!_modelPrimitiveTypes) {
         _modelPrimitiveTypes =
         [NSSet setWithArray:@[
-                              NSNull.class,
                               NSNumber.class,
                               NSString.class,
                               ]];

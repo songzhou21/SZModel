@@ -36,12 +36,13 @@
     SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
     SZModelSample *model = [adaptor modelFromClass:[SZModelSample class] dictionary:_jsonDictionary];
     
+    XCTAssert(model.somePrimitiveInt == 42);
     XCTAssert([model.someInt isEqual:@42]);
     XCTAssert([model.someFloat isEqual:@4.2]);
     XCTAssert([model.someString isEqualToString:@"string"]);
     XCTAssert(model.someTrue == YES);
     XCTAssert(model.someFalse == NO);
-    XCTAssert(model.someNull == [NSNull null]);
+    XCTAssertNil(model.someNull);
     XCTAssert(model.someArray.count == 3);
     XCTAssert([model.someArray.firstObject isEqual:@1]);
     XCTAssert([model.nestedObject isKindOfClass:[NSObject class]]);
@@ -99,7 +100,7 @@
     
     XCTAssert([ret[@"someInt"] isEqual:@0]);
     XCTAssert([ret[@"someString"] isEqualToString:@""]);
-    XCTAssert([ret[@"someNull"] isEqual:[NSNull null]]);
+    XCTAssert([ret[@"someNull"] isEqualToString:@""]);
     XCTAssert([ret[@"nestedObject"] isEqual:[NSNull null]]);
 }
 

@@ -8,14 +8,17 @@
 #import "SZNestedObject.h"
 #import "SZCodable.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface SZModelSample : NSObject <SZCodable>
 
-@property (nonatomic) NSNumber* someInt;
+@property (nonatomic) NSInteger somePrimitiveInt;
+@property (nullable, nonatomic) NSNumber* someInt;
 @property (nonatomic) NSNumber* someFloat;
 @property (nonatomic, copy) NSString* someString;
 @property (nonatomic) BOOL someTrue;
 @property (nonatomic) BOOL someFalse;
-@property (nonatomic) NSNull* someNull;
+@property (nullable, nonatomic) NSString* someNull;
 @property (nonatomic, copy) NSArray* someArray;
 
 @property (nonatomic) SZNestedObject *nestedObject;
@@ -29,3 +32,5 @@
 @property (nonatomic, copy) NSString* childName;
 
 @end
+
+NS_ASSUME_NONNULL_END
