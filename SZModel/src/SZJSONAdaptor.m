@@ -66,6 +66,16 @@ void SZEnumerateAllClassProperty(Class klass, void(^block)(NSString *property_na
     }
 }
 
+static NSSet<NSString *> *SZAllClassProperty(Class klass) {
+    NSMutableArray *ret = [NSMutableArray array];
+    SZEnumerateAllClassProperty(klass, ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
+        [ret addObject:property_name];
+    });
+    
+    return [NSSet setWithArray:ret];
+}
+
+
 NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
     NSScanner *scanner = [NSScanner scannerWithString:type_attribute];
     
@@ -80,7 +90,6 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
     
     return nil;
 }
-
 
 @interface SZJSONAdaptor ()
 
@@ -103,35 +112,31 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
  @return custom obj
  */
 - (id)_modelFromClass:(nullable Class)klass foundationObj:(NSObject *)obj {
-    if ([obj isEqual:[NSNull null]]) {
-        return nil;
-    }else if ([self _isKindOfType:obj container:self.modelPrimitiveTypes]) {
+    if (klass == nil ||
+        [self _isKindOfType:obj container:self.modelPrimitiveTypes]) {
         return obj;
+    }else if ([obj isEqual:[NSNull null]]) {
+        return nil;
     } else if ([obj isKindOfClass:[NSArray class]]) {
         NSArray *objArray = (NSArray *)obj;
         NSMutableArray *retArray = [NSMutableArray arrayWithCapacity:objArray.count];
         
         for (int i = 0; i < objArray.count; i++) {
-            id value = objArray[i];
-            retArray[i] = [self _modelFromClass:klass foundationObj:value];
+            retArray[i] = [self _modelFromClass:klass foundationObj:objArray[i]];
         }
         
         return retArray;
     } else if ([obj isKindOfClass:[NSDictionary class]]) {
-        if (!klass) { // when not conforming `SZCodable` or `propertyClassDictionary` return nil
-            return obj;
-        }
+        NSDictionary *dictionary = (NSDictionary *)obj;
+        NSDictionary<NSString *, NSString *> * propertyClassMap = [self _propertyClassMapForClass:klass];
+        NSMutableSet<NSString *> *propertyNames = [SZAllClassProperty(klass) mutableCopy];
+        [propertyNames intersectSet:[NSSet setWithArray:dictionary.allKeys]];
         
         NSObject *model = [klass new];
-        
-        NSDictionary<NSString *, NSString *> * propertyClassMap = [self _propertyClassMapForClass:klass];
-        NSDictionary *dictionary = (NSDictionary *)obj;
-        for (NSString *propertyName in dictionary) {
+
+        for (NSString *propertyName in propertyNames) {
             NSObject *propertyValue = dictionary[propertyName];
             Class propertyClass = NSClassFromString(propertyClassMap[propertyName]);
-            if (!propertyClass) {
-                continue;
-            }
             
             if ([propertyValue isKindOfClass:[NSArray class]] &&
                 [klass conformsToProtocol:@protocol(SZCodable)]) { // return NSArray<ObjectType>
@@ -145,7 +150,7 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
         
         return model;
     } else {
-        return [NSNull null];
+        return nil;
     }
 }
 

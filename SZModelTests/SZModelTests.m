@@ -36,6 +36,7 @@
     SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
     SZModelSample *model = [adaptor modelFromClass:[SZModelSample class] dictionary:_jsonDictionary];
     
+    XCTAssert(_jsonDictionary[@"notExistsProperty"]);
     XCTAssert(model.somePrimitiveInt == 42);
     XCTAssert([model.someInt isEqual:@42]);
     XCTAssert([model.someFloat isEqual:@4.2]);

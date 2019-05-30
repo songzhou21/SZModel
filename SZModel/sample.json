@@ -6,6 +6,7 @@
     "someTrue": true,
     "someFalse": false,
     "someNull": null,
+    "notExistsProperty": "hello",
     "someArray": [
         1,
         2,
