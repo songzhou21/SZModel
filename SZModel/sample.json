@@ -41,5 +41,8 @@
                 "name": "name2"
             }
         }
-    ]
+    ],
+    "dict": {
+        "key": "value"
+    }
 }

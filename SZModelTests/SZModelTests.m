@@ -14,6 +14,7 @@
 @interface SZModelTests : XCTestCase
 
 @property (nonatomic, copy) NSDictionary *jsonDictionary;
+@property (nonatomic, copy) NSDictionary *validDictionary;
 
 @end
 
@@ -25,6 +26,11 @@
     NSString *filePath = [[NSBundle bundleForClass:SZJSONAdaptor.class] pathForResource:@"sample" ofType:@"json"];
     NSError *error;
     _jsonDictionary = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:filePath] options:0 error:&error];
+    
+    NSMutableDictionary *dict = [_jsonDictionary mutableCopy];
+    [dict removeObjectForKey:@"notExistsProperty"];
+    
+    _validDictionary = dict;
 }
 
 - (void)tearDown {
@@ -74,10 +80,10 @@
 #pragma mark - Foundation to JSON
 - (void)testObj2Dictionary {
     SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
-    SZModelSample *model = [adaptor modelFromClass:[SZModelSample class] dictionary:_jsonDictionary];
+    SZModelSample *model = [adaptor modelFromClass:[SZModelSample class] dictionary:_validDictionary];
     NSDictionary *dict = [adaptor foundationObjFromModel:model];
     
-    XCTAssert([_jsonDictionary isEqualToDictionary:dict]);
+    XCTAssert([_validDictionary isEqualToDictionary:dict]);
     
 }
 

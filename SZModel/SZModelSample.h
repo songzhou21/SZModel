@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSArray<SZNestedObject *> *nestedArray;
 @property (nonatomic, copy) NSArray* mixArray;
 
+@property (nonatomic, copy) NSDictionary* dict;
+
 @end
 
 @interface SZModelSampleChild : SZModelSample
