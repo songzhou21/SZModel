@@ -107,12 +107,13 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
 /**
  create object from Foundation obj
  
- @param klass the Class of Dictionary, maybe nil if obj is primitieve Foundation obj
+ @param klass the Class of Dictionary, maybe nil if obj is primitive Foundation obj
  @param obj the Foundation obj
  @return custom obj
  */
 - (id)_modelFromClass:(nullable Class)klass foundationObj:(NSObject *)obj {
     if (klass == nil ||
+        [klass isSubclassOfClass:[NSDictionary class]] ||
         [self _isKindOfType:obj container:self.modelPrimitiveTypes]) {
         return obj;
     }else if ([obj isEqual:[NSNull null]]) {
@@ -133,7 +134,7 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
         [propertyNames intersectSet:[NSSet setWithArray:dictionary.allKeys]];
         
         NSObject *model = [klass new];
-
+        
         for (NSString *propertyName in propertyNames) {
             NSObject *propertyValue = dictionary[propertyName];
             Class propertyClass = NSClassFromString(propertyClassMap[propertyName]);
