@@ -15,6 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSInteger somePrimitiveInt;
 @property (nullable, nonatomic) NSNumber* someInt;
 @property (nonatomic) NSNumber* someFloat;
+
+/// JSON serialization value is NSNumber
+/// but needs to converted to its subclass NSDecimalNumber
+@property (nonatomic) NSDecimalNumber* decimal;
+
 @property (nonatomic, copy) NSString* someString;
 @property (nonatomic) BOOL someTrue;
 @property (nonatomic) BOOL someFalse;

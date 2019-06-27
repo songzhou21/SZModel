@@ -112,12 +112,12 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
  @return custom obj
  */
 - (id)_modelFromClass:(nullable Class)klass foundationObj:(NSObject *)obj {
-    if (klass == nil ||
-        [klass isSubclassOfClass:[NSDictionary class]] ||
-        [self _isKindOfType:obj container:self.modelPrimitiveTypes]) {
+    if (klass == nil) {
         return obj;
-    }else if ([obj isEqual:[NSNull null]]) {
+    } else if ([obj isEqual:[NSNull null]]) {
         return nil;
+    } else if ([self canConvertToFoundationObjFromClass:klass obj:obj]) {
+        return [self convertObj:obj toType:klass];
     } else if ([obj isKindOfClass:[NSArray class]]) {
         NSArray *objArray = (NSArray *)obj;
         NSMutableArray *retArray = [NSMutableArray arrayWithCapacity:objArray.count];
@@ -232,6 +232,27 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
     }
     
     return NO;
+}
+
+- (BOOL)canConvertToFoundationObjFromClass:(nullable Class)klass obj:(NSObject *)obj {
+    return
+    [klass isSubclassOfClass:[NSDictionary class]] ||
+    [self _isKindOfType:obj container:self.modelPrimitiveTypes];
+}
+
+- (NSObject *)convertObj:(NSObject *)obj toType:(Class)result {
+    Class source = [obj class];
+    
+    if ([result isSubclassOfClass:[NSDictionary class]]) {
+        return obj;
+    }
+    
+    if ([source isSubclassOfClass:[NSNumber class]] &&
+        [result isSubclassOfClass:[NSDecimalNumber class]]) {
+        return [NSDecimalNumber decimalNumberWithDecimal:[(NSNumber *)obj decimalValue]];
+    }
+    
+    return obj;
 }
 
 #pragma mark - Getter

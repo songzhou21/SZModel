@@ -2,6 +2,7 @@
     "somePrimitiveInt": 42,
     "someInt": 42,
     "someFloat": 4.2,
+    "decimal": 4.23456,
     "someString": "string",
     "someTrue": true,
     "someFalse": false,

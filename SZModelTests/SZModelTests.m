@@ -53,6 +53,8 @@
     XCTAssert(model.someArray.count == 3);
     XCTAssert([model.someArray.firstObject isEqual:@1]);
     XCTAssert([model.nestedObject isKindOfClass:[NSObject class]]);
+    
+    XCTAssert([model.decimal isKindOfClass:[NSDecimalNumber class]]);
 }
 
 - (void)testNestedDictionary2Ojbect {
