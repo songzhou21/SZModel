@@ -108,9 +108,35 @@
     NSDictionary *ret = [adaptor foundationObjNoNullFromModel:o];
     
     XCTAssert([ret[@"someInt"] isEqual:@0]);
+    XCTAssert([ret[@"decimal"] isEqual:@0]);
     XCTAssert([ret[@"someString"] isEqualToString:@""]);
     XCTAssert([ret[@"someNull"] isEqualToString:@""]);
     XCTAssert([ret[@"nestedObject"] isEqual:[NSNull null]]);
+}
+
+- (void)testIgnoreNilPropertyToJSON {
+    SZModelSample *o = [SZModelSample new];
+    o.someString = @"string";
+    o.someArray = @[@1];
+    
+    SZJSONAdaptor *adaptor = [SZJSONAdaptor new];
+    adaptor.ignoreNilValue = YES;
+    NSDictionary *ret = [adaptor foundationObjFromModel:o];
+    NSDictionary *noNullRet = [adaptor foundationObjNoNullFromModel:o];
+    
+    // properties assigned value
+    XCTAssert([ret[@"someString"] isEqualToString:@"string"]);
+    XCTAssert([ret[@"someArray"] isEqualToArray:@[@1]]);
+    
+    // primitive properties have inital value
+    XCTAssert([ret[@"someTrue"] isEqual:@(NO)]);
+    XCTAssert([ret[@"someFalse"] isEqual:@(NO)]);
+    XCTAssert([ret[@"somePrimitiveInt"] isEqual:@(0)]);
+    
+    // properties are not convertedeeee
+    XCTAssertNil(ret[@"someNull"]);
+    
+    XCTAssert([ret isEqualToDictionary:noNullRet]);
 }
 
 - (void)testSubclassToJSON {

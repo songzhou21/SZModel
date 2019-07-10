@@ -104,6 +104,15 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
 
 @implementation SZJSONAdaptor
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _ignoreNilValue = NO;
+    }
+    return self;
+}
+
 /**
  create object from Foundation obj
  
@@ -179,7 +188,12 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
         for (int i = 0; i < objArray.count; i++) {
             NSObject *obj = objArray[i];
             NSString *type = NSStringFromClass([obj class]);
-            retArray[i] = [self _makeFoundationObjectFromModel:obj type:type maker:maker];
+            id ret = [self _makeFoundationObjectFromModel:obj type:type maker:maker];
+            if (self.ignoreNilValue && [ret isEqual:[NSNull null]]) {
+
+            } else {
+                retArray[i] = ret;
+            }
         }
         
         return retArray;
@@ -187,7 +201,13 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
         NSMutableDictionary *ret = [NSMutableDictionary dictionary];
         SZEnumerateAllClassProperty([model class], ^(NSString * _Nonnull property_name, NSString * _Nonnull type_attribute) {
             id obj = [model valueForKey:property_name];
-            [ret setObject:[self _makeFoundationObjectFromModel:obj type:SZClassNameFromType(type_attribute) maker:maker] forKey:property_name];
+            id retObj = [self _makeFoundationObjectFromModel:obj type:SZClassNameFromType(type_attribute) maker:maker];
+            
+            if (self.ignoreNilValue && [retObj isEqual:[NSNull null]]) {
+                
+            } else {
+                [ret setObject:retObj forKey:property_name];
+            }
         });
         
         return ret;
@@ -255,6 +275,20 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
     return obj;
 }
 
+- (nullable id)initailValueForType:(NSString *)type {
+    Class typeClass = NSClassFromString(type);
+    __auto_type types = [self objInitailValueMap].allKeys;
+    
+    NSString *foundType;
+    for (NSString *initalType in types) {
+        if ([typeClass isSubclassOfClass:NSClassFromString(initalType)]) {
+            foundType = initalType;
+        }
+    }
+    
+    return [self objInitailValueMap][foundType];
+}
+
 #pragma mark - Getter
 - (NSSet<Class> *)primitiveTypes {
     if (!_primitiveTypes) {
@@ -311,7 +345,11 @@ NSString * _Nullable SZClassNameFromType(NSString *type_attribute) {
                                     type:NSStringFromClass(model.class)
                                    maker:^NSObject * _Nonnull(NSObject * _Nullable obj, NSString * _Nonnull type) {
                                        if (obj == nil) {
-                                           return self.objInitailValueMap[type] ?: [NSNull null];
+                                           if (self.ignoreNilValue) {
+                                               return [NSNull null];
+                                           } else {
+                                               return [self initailValueForType:type] ?: [NSNull null];
+                                           }
                                        } else {
                                            return obj;
                                        }

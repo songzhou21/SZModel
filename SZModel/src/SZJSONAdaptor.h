@@ -13,6 +13,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface SZJSONAdaptor : NSObject
 
 /**
+ default is NO,
+ otherwise, when converting the model to Dictionary,
+ ignore properties which have ni value
+ */
+@property (nonatomic) BOOL ignoreNilValue;
+
+/**
  convert NSDcitonary to model object
  
  @param klass the Class of model object
